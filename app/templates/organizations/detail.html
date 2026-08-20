@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block page_title %}{{ organization.display_name }}{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ organization.sector or "-" }} · {{ organization.city or "-" }}, {{ organization.country }}</div>{% endblock %}
+{% block topbar_actions %}
+  {% if current_user.is_admin() or current_user.is_evaluator() %}
+    <a class="btn btn-secondary" href="{{ url_for('organizations.edit', organization_id=organization.id) }}">Editar</a>
+    <a class="btn" href="{{ url_for('assessment.create', organization_id=organization.id) }}">+ Nueva evaluación</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <h3 class="mt-0">Datos de la organización</h3>
+    <table>
+      <tr><th>Razón social</th><td>{{ organization.legal_name }}</td></tr>
+      <tr><th>RUC</th><td>{{ organization.tax_id or "-" }}</td></tr>
+      <tr><th>Empleados</th><td>{{ organization.employee_count or "-" }}</td></tr>
+      <tr><th>Contacto</th><td>{{ organization.contact_name or "-" }} ({{ organization.contact_email or "-" }})</td></tr>
+      <tr><th>Teléfono</th><td>{{ organization.contact_phone or "-" }}</td></tr>
+      <tr><th>Responsable</th><td>{{ organization.responsible_evaluator or "-" }}</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h3 class="mt-0">Evaluaciones</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Nombre</th><th>Estado</th><th>Creada</th><th></th></tr></thead>
+        <tbody>
+          {% for a in assessments %}
+          <tr>
+            <td>{{ a.name }}</td>
+            <td><span class="badge badge-{{ a.status }}">{{ ASSESSMENT_STATUS_LABELS[a.status] }}</span></td>
+            <td>{{ a.created_at.strftime("%d/%m/%Y") }}</td>
+            <td><a href="{{ url_for('dashboard.executive_dashboard', assessment_id=a.id) }}">Abrir →</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="muted">No hay evaluaciones registradas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

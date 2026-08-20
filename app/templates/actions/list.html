@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block page_title %}Plan de acción - {{ assessment.name }}{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ assessment.organization.display_name }}</div>{% endblock %}
+{% block topbar_actions %}
+  {% if current_user.is_admin() or current_user.is_evaluator() %}
+    <a class="btn btn-sm" href="{{ url_for('actions.create', assessment_id=assessment.id) }}">+ Nueva acción</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="grid grid-3">
+  {% for horizon, label in [(90, "0-90 días"), (180, "91-180 días"), (365, "181-365 días")] %}
+    <div class="card">
+      <h3 class="mt-0">{{ label }} <span class="muted" style="font-weight:400;font-size:13px">({{ roadmap[horizon]|length }})</span></h3>
+      {% for a in roadmap[horizon] %}
+        <div style="padding:8px 0; border-bottom:1px dashed var(--border); font-size:13px">
+          <strong>{{ a.title }}</strong><br>
+          <span class="badge badge-{{ a.priority }}">{{ PRIORITY_LABELS[a.priority] }}</span>
+          <span class="badge badge-{{ a.status }}">{{ ACTION_STATUS_LABELS[a.status] }}</span>
+          {% if a.target_date %}<div class="muted" style="font-size:11.5px;margin-top:2px">Objetivo: {{ a.target_date.strftime("%d/%m/%Y") }}</div>{% endif %}
+        </div>
+      {% else %}
+        <p class="muted" style="font-size:13px">Sin acciones planificadas.</p>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h3 class="mt-0">Todas las acciones</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Acción</th><th>Riesgo</th><th>Responsable</th><th>Prioridad</th><th>Estado</th><th>Avance</th><th>Fecha objetivo</th><th></th></tr></thead>
+      <tbody>
+        {% for a in actions %}
+        <tr>
+          <td>{{ a.title }}</td>
+          <td>{{ a.risk.code if a.risk else "-" }}</td>
+          <td>{{ a.responsible or "-" }}</td>
+          <td><span class="badge badge-{{ a.priority }}">{{ PRIORITY_LABELS[a.priority] }}</span></td>
+          <td><span class="badge badge-{{ a.status }}">{{ ACTION_STATUS_LABELS[a.status] }}</span></td>
+          <td>{{ a.progress }}%</td>
+          <td>{{ a.target_date.strftime("%d/%m/%Y") if a.target_date else "-" }}</td>
+          <td>
+            {% if current_user.is_admin() or current_user.is_evaluator() %}
+              <a href="{{ url_for('actions.edit', assessment_id=assessment.id, action_id=a.id) }}">Editar</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="muted">No se han registrado acciones.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

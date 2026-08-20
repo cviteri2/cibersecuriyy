@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:720px">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      <div class="form-group">{{ form.legal_name.label }}{{ form.legal_name(class_="form-control") }}
+        {% for e in form.legal_name.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}</div>
+      <div class="form-group">{{ form.trade_name.label }}{{ form.trade_name(class_="form-control") }}</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">{{ form.tax_id.label }}{{ form.tax_id(class_="form-control") }}</div>
+      <div class="form-group">{{ form.sector.label }}{{ form.sector(class_="form-control") }}</div>
+      <div class="form-group">{{ form.employee_count.label }}{{ form.employee_count(class_="form-control") }}</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">{{ form.country.label }}{{ form.country(class_="form-control") }}</div>
+      <div class="form-group">{{ form.city.label }}{{ form.city(class_="form-control") }}</div>
+      <div class="form-group">{{ form.evaluation_date.label }}{{ form.evaluation_date(class_="form-control") }}</div>
+    </div>
+    <div class="section-title">Persona de contacto</div>
+    <div class="form-row">
+      <div class="form-group">{{ form.contact_name.label }}{{ form.contact_name(class_="form-control") }}</div>
+      <div class="form-group">{{ form.contact_email.label }}{{ form.contact_email(class_="form-control") }}
+        {% for e in form.contact_email.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}</div>
+      <div class="form-group">{{ form.contact_phone.label }}{{ form.contact_phone(class_="form-control") }}</div>
+    </div>
+    <div class="form-group">{{ form.responsible_evaluator.label }}{{ form.responsible_evaluator(class_="form-control") }}</div>
+    {{ form.submit(class_="btn") }}
+  </form>
+</div>
+{% endblock %}

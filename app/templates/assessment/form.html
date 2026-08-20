@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block page_title %}Nueva evaluación{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ organization.display_name }}</div>{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px">
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.name.label }}
+      {{ form.name(class_="form-control", placeholder="Evaluación 2026 - Diagnóstico Inicial") }}
+      {% for e in form.name.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+    </div>
+    {{ form.submit(class_="btn") }}
+  </form>
+</div>
+{% endblock %}

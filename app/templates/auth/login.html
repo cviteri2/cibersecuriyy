@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión - Cyber & Privacy Assessment Platform{% endblock %}
+{% block guest_content %}
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="brand">
+      <strong>Cyber &amp; Privacy</strong>
+      <span>Assessment Platform</span>
+    </div>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        {{ form.email.label }}
+        {{ form.email(class_="form-control", autofocus=true) }}
+        {% for e in form.email.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="form-group">
+        {{ form.password.label }}
+        {{ form.password(class_="form-control") }}
+        {% for e in form.password.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}
+      </div>
+      {{ form.submit(class_="btn", style="width:100%") }}
+    </form>
+    <div class="demo-hint">
+      Usuarios de demostración (contraseña definida en <code>SEED_ADMIN_PASSWORD</code>):<br>
+      admin@demo-corp.ec · evaluador@demo-corp.ec · cliente@demo-corp.ec
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block page_title %}Registro de auditoría{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Entidad</th><th>Detalle</th><th>IP</th></tr></thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+          <td>{{ log.user.email if log.user else "-" }}</td>
+          <td>{{ log.action }}</td>
+          <td>{{ log.entity }}{% if log.entity_id %} #{{ log.entity_id }}{% endif %}</td>
+          <td>{{ log.detail or "-" }}</td>
+          <td>{{ log.ip_address or "-" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">Sin eventos registrados.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
