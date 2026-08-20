@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block page_title %}Panel general{% endblock %}
+{% block page_subtitle %}<div class="subtitle">Organizaciones registradas en la plataforma</div>{% endblock %}
+{% block topbar_actions %}
+  {% if current_user.is_admin() or current_user.is_evaluator() %}
+    <a class="btn" href="{{ url_for('organizations.create') }}">+ Nueva organización</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="grid grid-3">
+  {% for org in organizations %}
+    <div class="card">
+      <h3 class="mt-0">{{ org.display_name }}</h3>
+      <div class="muted" style="font-size:13px">{{ org.sector or "Sector no especificado" }} · {{ org.city or "-" }}, {{ org.country }}</div>
+      <p style="font-size:13px" class="muted">{{ org.assessments|length }} evaluación(es) registrada(s)</p>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('organizations.detail', organization_id=org.id) }}">Ver organización</a>
+    </div>
+  {% else %}
+    <p class="muted">No hay organizaciones registradas todavía.</p>
+  {% endfor %}
+</div>
+{% endblock %}

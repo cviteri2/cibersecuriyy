@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block page_title %}{{ domain.name }}{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ assessment.name }} · {{ domain.framework.name }}</div>{% endblock %}
+{% block topbar_actions %}
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('assessment.questionnaire_overview', assessment_id=assessment.id) }}">← Volver al cuestionario</a>
+{% endblock %}
+{% block content %}
+{% for q in questions %}
+  {% set response = responses_by_question.get(q.id) %}
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; gap:12px">
+      <div>
+        <div class="muted" style="font-size:12px">{{ q.code }} · {{ q.category }}{% if q.reference %} · {{ q.reference }}{% endif %}</div>
+        <h3 style="margin:4px 0 6px">{{ q.title }}</h3>
+        {% if q.description %}<p class="muted" style="font-size:13.5px; margin-top:0">{{ q.description }}</p>{% endif %}
+      </div>
+      {% if response %}<span class="badge badge-low" style="align-self:flex-start">Respondida</span>{% endif %}
+    </div>
+
+    <form method="post" action="{{ url_for('assessment.answer_question', assessment_id=assessment.id, domain_id=domain.id, question_id=q.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-row">
+        {% for value, label in ANSWER_LABELS.items() %}
+          <label class="checkbox-inline" style="font-size:13.5px">
+            <input type="radio" name="answer" value="{{ value }}" {% if response and response.answer == value %}checked{% endif %} required>
+            {{ label }}
+          </label>
+        {% endfor %}
+      </div>
+      <div class="form-group">
+        <label>Notas</label>
+        <textarea name="notes" class="form-control" rows="2">{{ response.notes if response else "" }}</textarea>
+      </div>
+      <button class="btn btn-sm" type="submit">Guardar respuesta</button>
+    </form>
+
+    {% if q.evidence_required %}
+      <div class="section-title">Evidencia {{ "(requerida)" }}</div>
+      {% if response %}
+        {% if response.evidences %}
+          <ul class="evidence-list">
+            {% for ev in response.evidences %}
+              <li>
+                <span class="badge badge-{{ ev.status }}">{{ ev.status }}</span>
+                {{ ev.name }}
+                {% if ev.file_path %}<a href="{{ url_for('assessment.download_evidence', evidence_id=ev.id) }}">descargar</a>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <form method="post" action="{{ url_for('assessment.upload_evidence', response_id=response.id) }}" enctype="multipart/form-data" style="margin-top:10px">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="form-row">
+            <div class="form-group"><input class="form-control" type="text" name="name" placeholder="Nombre de la evidencia" required></div>
+            <div class="form-group"><input class="form-control" type="text" name="responsible" placeholder="Responsable"></div>
+            <div class="form-group"><input class="form-control" type="file" name="file"></div>
+          </div>
+          <div class="form-group"><input class="form-control" type="text" name="description" placeholder="Descripción"></div>
+          <button class="btn btn-secondary btn-sm" type="submit">Registrar evidencia</button>
+        </form>
+      {% else %}
+        <p class="muted" style="font-size:13px">Responde la pregunta para poder registrar evidencia.</p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endfor %}
+{% endblock %}

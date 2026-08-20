@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block page_title %}Organizaciones{% endblock %}
+{% block topbar_actions %}<a class="btn" href="{{ url_for('organizations.create') }}">+ Nueva organización</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Razón social</th><th>RUC</th><th>Sector</th><th>Ciudad</th><th>Evaluaciones</th><th></th></tr></thead>
+      <tbody>
+        {% for org in organizations %}
+        <tr>
+          <td>{{ org.legal_name }}</td>
+          <td>{{ org.tax_id or "-" }}</td>
+          <td>{{ org.sector or "-" }}</td>
+          <td>{{ org.city or "-" }}</td>
+          <td>{{ org.assessments|length }}</td>
+          <td><a href="{{ url_for('organizations.detail', organization_id=org.id) }}">Ver →</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="muted">No hay organizaciones registradas.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

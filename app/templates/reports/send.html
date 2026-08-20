@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block page_title %}Enviar informe{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ assessment.name }}</div>{% endblock %}
+{% block topbar_actions %}<a class="btn btn-secondary btn-sm" href="{{ url_for('reports.download_pdf', assessment_id=assessment.id) }}">Descargar PDF</a>{% endblock %}
+{% block content %}
+{% if not email_configured %}
+  <div class="flash flash-warning">
+    El envío por correo mediante Resend no está configurado (faltan <code>RESEND_API_KEY</code> / <code>RESEND_FROM_EMAIL</code>).
+    Puedes generar y descargar el PDF, pero el envío quedará registrado como pendiente de configuración.
+  </div>
+{% endif %}
+<div class="grid grid-2">
+  <div class="card">
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-group">{{ form.recipient.label }}{{ form.recipient(class_="form-control") }}
+        {% for e in form.recipient.errors %}<div class="form-errors">{{ e }}</div>{% endfor %}</div>
+      <div class="form-group">{{ form.subject.label }}{{ form.subject(class_="form-control") }}</div>
+      <div class="form-group">{{ form.message.label }}{{ form.message(class_="form-control", rows=4) }}</div>
+      {{ form.submit(class_="btn") }}
+    </form>
+  </div>
+  <div class="card">
+    <h3 class="mt-0">Historial de envíos</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fecha</th><th>Destinatario</th><th>Estado</th></tr></thead>
+        <tbody>
+          {% for log in logs %}
+          <tr>
+            <td>{{ log.sent_at.strftime("%d/%m/%Y %H:%M") }}</td>
+            <td>{{ log.recipient }}</td>
+            <td><span class="badge badge-{{ log.status }}">{{ log.status }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="muted">Sin envíos registrados.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

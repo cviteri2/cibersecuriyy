@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block page_title %}Cuestionario - {{ assessment.name }}{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ assessment.organization.display_name }}</div>{% endblock %}
+{% block topbar_actions %}
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('dashboard.executive_dashboard', assessment_id=assessment.id) }}">Ver dashboard</a>
+  {% if (current_user.is_admin() or current_user.is_evaluator()) and assessment.status != 'completed' %}
+    <form method="post" action="{{ url_for('assessment.complete', assessment_id=assessment.id) }}" style="display:inline">
+      <button class="btn btn-teal btn-sm" type="submit" onclick="return confirm('¿Marcar la evaluación como completada?');">Marcar como completada</button>
+    </form>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="card">
+  <h3 class="mt-0">Progreso general</h3>
+  <div class="progress-bar"><div class="progress-bar-fill" style="width:{{ overall_progress }}%"></div></div>
+  <p class="muted" style="font-size:13px">{{ answered_questions }} de {{ total_questions }} preguntas respondidas ({{ overall_progress }}%)</p>
+</div>
+
+<div class="grid grid-3">
+  {% for dp in domain_progress %}
+    <div class="card">
+      <div class="muted" style="font-size:12px; text-transform:uppercase">{{ dp.framework.code }}</div>
+      <h3 style="margin:4px 0 10px">{{ dp.domain.name }}</h3>
+      <div class="progress-bar"><div class="progress-bar-fill" style="width:{{ dp.percent }}%"></div></div>
+      <p class="muted" style="font-size:12.5px; margin-bottom:12px">{{ dp.answered }} / {{ dp.total }} preguntas</p>
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('assessment.questionnaire_domain', assessment_id=assessment.id, domain_id=dp.domain.id) }}">Responder →</a>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

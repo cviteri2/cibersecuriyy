@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block page_title %}Matriz de riesgo{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ assessment.name }}</div>{% endblock %}
+{% block topbar_actions %}<a class="btn btn-secondary btn-sm" href="{{ url_for('risks.list_risks', assessment_id=assessment.id) }}">← Listado de riesgos</a>{% endblock %}
+{% block content %}
+<div class="card">
+  <table class="matrix-table">
+    <tr>
+      <th></th>
+      <th colspan="5">Probabilidad →</th>
+    </tr>
+    {% for impact in [5, 4, 3, 2, 1] %}
+    <tr>
+      {% if impact == 5 %}<th rowspan="5" style="writing-mode: vertical-rl; transform: rotate(180deg)">Impacto ↑</th>{% endif %}
+      {% for prob in [1, 2, 3, 4, 5] %}
+        {% set cell = matrix[impact][prob] %}
+        {% set level = (prob * impact) %}
+        {% set level_class = 'critical' if level > 16 else ('high' if level > 9 else ('medium' if level > 4 else 'low')) %}
+        <td class="matrix-cell matrix-level-{{ level_class }}" title="Probabilidad {{ prob }} × Impacto {{ impact }}">
+          <div class="count">{{ cell|length }}</div>
+          {% for r in cell[:2] %}<div style="font-size:10px">{{ r.code }}</div>{% endfor %}
+          {% if cell|length > 2 %}<div style="font-size:10px">+{{ cell|length - 2 }} más</div>{% endif %}
+        </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+    <tr><td></td>{% for prob in [1,2,3,4,5] %}<td class="muted">{{ prob }}</td>{% endfor %}</tr>
+  </table>
+  <div style="margin-top:16px; font-size:13px" class="muted">
+    <span class="badge badge-low">1-4 Bajo</span>
+    <span class="badge badge-medium">5-9 Medio</span>
+    <span class="badge badge-high">10-16 Alto</span>
+    <span class="badge badge-critical">17-25 Crítico</span>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Cyber & Privacy Assessment Platform{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+{% if current_user.is_authenticated %}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <strong>Cyber &amp; Privacy</strong>
+      <span>Assessment Platform</span>
+    </div>
+    <nav>
+      <a href="{{ url_for('dashboard.index') }}">Inicio</a>
+      {% if current_user.is_admin() or current_user.is_evaluator() %}
+        <a href="{{ url_for('organizations.list_organizations') }}">Organizaciones</a>
+      {% endif %}
+      {% if current_user.is_admin() %}
+        <a href="{{ url_for('admin.list_users') }}">Usuarios</a>
+        <a href="{{ url_for('admin.question_bank') }}">Banco de preguntas</a>
+        <a href="{{ url_for('admin.audit_log') }}">Auditoría</a>
+      {% endif %}
+    </nav>
+    <div class="user-box">
+      <div>{{ current_user.name }}</div>
+      <div class="muted" style="font-size:12px">{{ current_user.email }}</div>
+      <span class="role-badge">{{ current_user.role }}</span>
+      <div style="margin-top:10px">
+        <a href="{{ url_for('auth.change_password') }}">Cambiar contraseña</a> ·
+        <a href="{{ url_for('auth.logout') }}">Salir</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>{% block page_title %}{% endblock %}</h1>
+        {% block page_subtitle %}{% endblock %}
+      </div>
+      {% block topbar_actions %}{% endblock %}
+    </div>
+    {% include "_flashes.html" %}
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% else %}
+  {% include "_flashes.html" %}
+  {% block guest_content %}{% endblock %}
+{% endif %}
+</body>
+</html>

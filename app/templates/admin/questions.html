@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block page_title %}Banco de preguntas{% endblock %}
+{% block content %}
+{% for fw in frameworks %}
+  <div class="card">
+    <h3 class="mt-0">{{ fw.name }}</h3>
+    <p class="muted" style="font-size:13px">{{ fw.description }}</p>
+    {% for domain in fw.domains|sort(attribute="order") %}
+      <div class="section-title">{{ domain.name }}</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Código</th><th>Pregunta</th><th>Categoría</th><th>Peso</th><th>Evidencia</th><th>Referencia</th></tr></thead>
+          <tbody>
+            {% for q in domain.questions|sort(attribute="order") %}
+            <tr>
+              <td>{{ q.code }}</td>
+              <td>{{ q.title }}</td>
+              <td>{{ q.category }}</td>
+              <td>{{ q.weight }}</td>
+              <td>{{ "Sí" if q.evidence_required else "No" }}</td>
+              <td>{{ q.reference }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  </div>
+{% endfor %}
+{% endblock %}

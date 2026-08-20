@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block page_title %}{{ assessment.name }}{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ organization.display_name }} · <span class="badge badge-{{ assessment.status }}">{{ ASSESSMENT_STATUS_LABELS[assessment.status] }}</span></div>{% endblock %}
+{% block topbar_actions %}
+  <div>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('assessment.questionnaire_overview', assessment_id=assessment.id) }}">Cuestionario</a>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('risks.list_risks', assessment_id=assessment.id) }}">Riesgos</a>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('actions.list_actions', assessment_id=assessment.id) }}">Acciones</a>
+    <a class="btn btn-teal btn-sm" href="{{ url_for('reports.download_pdf', assessment_id=assessment.id) }}">Descargar PDF</a>
+    <a class="btn btn-sm" href="{{ url_for('reports.send_report', assessment_id=assessment.id) }}">Enviar informe</a>
+  </div>
+{% endblock %}
+{% block content %}
+
+<div class="grid grid-4">
+  <div class="kpi">
+    <div class="label">Cybersecurity Score</div>
+    <div class="value">{{ "%.1f"|format(maturity.global) if maturity.global is not none else "N/D" }} / 5</div>
+    <div class="hint">{{ maturity.global_label }}</div>
+  </div>
+  <div class="kpi teal">
+    <div class="label">Privacy Score (LOPDP)</div>
+    <div class="value">{{ "%.0f"|format(privacy_gap.overall_percent) if privacy_gap and privacy_gap.overall_percent is not none else "N/D" }}{{ "%" if privacy_gap and privacy_gap.overall_percent is not none }}</div>
+    <div class="hint">Diagnóstico de referencia</div>
+  </div>
+  <div class="kpi neutral">
+    <div class="label">Gap ISO/IEC 27001</div>
+    <div class="value">{{ "%.0f"|format(gap.overall_percent) if gap.overall_percent is not none else "N/D" }}{{ "%" if gap.overall_percent is not none }}</div>
+    <div class="hint">Cumplimiento agregado</div>
+  </div>
+  <div class="kpi alert">
+    <div class="label">Riesgos críticos / altos</div>
+    <div class="value">{{ risk_summary.counts.critical }} / {{ risk_summary.counts.high }}</div>
+    <div class="hint">{{ risk_summary.counts.total }} riesgos identificados</div>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-top:4px">
+  <div class="kpi neutral">
+    <div class="label">Progreso del cuestionario</div>
+    <div class="value">{{ assessment.progress_percent(total_questions) }}%</div>
+    <div class="hint">{{ responses|length }} / {{ total_questions }} preguntas</div>
+  </div>
+  <div class="kpi neutral">
+    <div class="label">Acciones vencidas</div>
+    <div class="value">{{ overdue_actions|length }}</div>
+    <div class="hint">requieren atención inmediata</div>
+  </div>
+  <div class="kpi neutral">
+    <div class="label">Próximas a vencer (30 días)</div>
+    <div class="value">{{ upcoming_actions|length }}</div>
+    <div class="hint">plan de tratamiento</div>
+  </div>
+  <div class="kpi neutral">
+    <div class="label">Evidencias pendientes</div>
+    <div class="value">{{ pending_evidences|length }}</div>
+    <div class="hint">por validar</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:20px">
+  <div class="card">
+    <h3>Madurez por dominio</h3>
+    {% for name, score in maturity.by_domain.items() %}
+      <div class="bar-row">
+        <div class="bar-label">{{ name }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width: {{ ((score or 0) / 5 * 100)|round }}%; background: {{ '#00897b' if score and score >= 3 else ('#f9a825' if score and score >=2 else '#c62828') }}"></div></div>
+        <div class="bar-value">{{ "%.1f"|format(score) if score is not none else "N/D" }}</div>
+      </div>
+    {% else %}
+      <p class="muted">Aún no hay respuestas registradas.</p>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h3>Cumplimiento por marco</h3>
+    {% for name, pct in gap.by_framework.items() %}
+      <div class="bar-row">
+        <div class="bar-label">{{ name.split(" - ")[0] }}</div>
+        <div class="bar-track"><div class="bar-fill" style="width: {{ (pct or 0)|round }}%; background: {{ '#00897b' if pct and pct >= 70 else ('#f9a825' if pct and pct >=40 else '#c62828') }}"></div></div>
+        <div class="bar-value">{{ "%.0f"|format(pct) if pct is not none else "N/D" }}%</div>
+      </div>
+    {% else %}
+      <p class="muted">Aún no hay respuestas registradas.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Riesgos principales</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Riesgo</th><th>Nivel</th><th>Tratamiento</th></tr></thead>
+        <tbody>
+          {% for r in risk_summary.top_risks[:6] %}
+          <tr>
+            <td>{{ r.code }}</td>
+            <td>{{ r.name }}</td>
+            <td><span class="badge badge-{{ r.inherent_level }}">{{ RISK_LEVEL_LABELS[r.inherent_level] }}</span></td>
+            <td>{{ TREATMENT_LABELS[r.treatment] }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="muted">No se han registrado riesgos.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <a href="{{ url_for('risks.matrix', assessment_id=assessment.id) }}" style="font-size:13px">Ver matriz de riesgo →</a>
+  </div>
+
+  <div class="card">
+    <h3>Roadmap</h3>
+    {% for horizon, label in [(90, "0-90 días"), (180, "91-180 días"), (365, "181-365 días")] %}
+      <div class="section-title" style="margin:12px 0 6px">{{ label }} ({{ roadmap[horizon]|length }})</div>
+      {% for a in roadmap[horizon][:3] %}
+        <div style="font-size:13px; padding:4px 0; border-bottom:1px dashed var(--border)">
+          {{ a.title }} <span class="badge badge-{{ a.priority }}">{{ PRIORITY_LABELS[a.priority] }}</span>
+        </div>
+      {% else %}
+        <div class="muted" style="font-size:13px">Sin acciones planificadas.</div>
+      {% endfor %}
+    {% endfor %}
+    <a href="{{ url_for('actions.list_actions', assessment_id=assessment.id) }}" style="font-size:13px">Ver plan de acción completo →</a>
+  </div>
+</div>
+
+{% endblock %}

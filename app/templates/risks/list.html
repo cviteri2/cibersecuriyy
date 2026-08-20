@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block page_title %}Riesgos - {{ assessment.name }}{% endblock %}
+{% block page_subtitle %}<div class="subtitle">{{ assessment.organization.display_name }}</div>{% endblock %}
+{% block topbar_actions %}
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('risks.matrix', assessment_id=assessment.id) }}">Ver matriz</a>
+  {% if current_user.is_admin() or current_user.is_evaluator() %}
+    <a class="btn btn-sm" href="{{ url_for('risks.create', assessment_id=assessment.id) }}">+ Nuevo riesgo</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="grid grid-4">
+  <div class="kpi neutral"><div class="label">Críticos</div><div class="value">{{ summary.counts.critical }}</div></div>
+  <div class="kpi neutral"><div class="label">Altos</div><div class="value">{{ summary.counts.high }}</div></div>
+  <div class="kpi neutral"><div class="label">Medios</div><div class="value">{{ summary.counts.medium }}</div></div>
+  <div class="kpi neutral"><div class="label">Bajos</div><div class="value">{{ summary.counts.low }}</div></div>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Código</th><th>Riesgo</th><th>Prob.</th><th>Impacto</th><th>Nivel</th><th>Residual</th><th>Tratamiento</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for r in risks %}
+        <tr>
+          <td>{{ r.code }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.probability }}</td>
+          <td>{{ r.impact }}</td>
+          <td><span class="badge badge-{{ r.inherent_level }}">{{ RISK_LEVEL_LABELS[r.inherent_level] }}</span></td>
+          <td>{% if r.residual_level %}<span class="badge badge-{{ r.residual_level }}">{{ RISK_LEVEL_LABELS[r.residual_level] }}</span>{% else %}-{% endif %}</td>
+          <td>{{ TREATMENT_LABELS[r.treatment] }}</td>
+          <td><span class="badge badge-{{ r.status }}">{{ RISK_STATUS_LABELS[r.status] }}</span></td>
+          <td>
+            {% if current_user.is_admin() or current_user.is_evaluator() %}
+              <a href="{{ url_for('risks.edit', assessment_id=assessment.id, risk_id=r.id) }}">Editar</a>
+              <form method="post" action="{{ url_for('risks.delete', assessment_id=assessment.id, risk_id=r.id) }}" style="display:inline" onsubmit="return confirm('¿Eliminar este riesgo?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-link" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px">Eliminar</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="muted">No se han registrado riesgos todavía.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
